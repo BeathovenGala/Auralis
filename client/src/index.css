@@ -76,6 +76,13 @@
   --chart-4: 25 90% 45%;
   --chart-5: 280 60% 45%;
 
+  /* Space Weather Color System for R/S/G indicators */
+  --weather-normal: 120 60% 35%;
+  --weather-elevated: 45 90% 45%;
+  --weather-high: 25 90% 45%;
+  --weather-severe: 0 85% 45%;
+  --weather-extreme: 0 90% 30%;
+
   --font-sans: Inter, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: JetBrains Mono, monospace;
@@ -194,6 +201,13 @@
   --chart-3: 45 90% 65%;
   --chart-4: 25 90% 65%;
   --chart-5: 280 60% 70%;
+
+  /* Space Weather Color System for R/S/G indicators - Dark Mode */
+  --weather-normal: 120 60% 60%;
+  --weather-elevated: 45 90% 60%;
+  --weather-high: 25 90% 60%;
+  --weather-severe: 0 85% 60%;
+  --weather-extreme: 0 90% 50%;
 
   --shadow-2xs: 0px 1px 2px 0px hsl(220 15% 2% / 0.10);
   --shadow-xs: 0px 1px 3px 0px hsl(220 15% 2% / 0.15);

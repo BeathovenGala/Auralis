@@ -83,11 +83,11 @@ export default {
         },
         // Space Weather Status Colors (R/S/G Scale)
         weather: {
-          normal: "hsl(120 60% 45%)",     // Green - Normal conditions
-          elevated: "hsl(45 90% 55%)",    // Yellow - Elevated activity  
-          high: "hsl(25 90% 55%)",        // Orange - High activity
-          severe: "hsl(0 85% 55%)",       // Red - Severe conditions
-          extreme: "hsl(320 85% 45%)",    // Purple - Extreme events
+          normal: "hsl(var(--weather-normal) / <alpha-value>)",
+          elevated: "hsl(var(--weather-elevated) / <alpha-value>)",
+          high: "hsl(var(--weather-high) / <alpha-value>)",
+          severe: "hsl(var(--weather-severe) / <alpha-value>)",
+          extreme: "hsl(var(--weather-extreme) / <alpha-value>)",
         },
         // Operational colors for space weather system
         operational: {

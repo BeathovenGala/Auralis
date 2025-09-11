@@ -1,0 +1,181 @@
+Routing & global chrome
+
+Top nav bar (persistent): logo (left), page links (center/left), global status chips (SOL / MAG / ION showing small colored dot + value), search, user menu (right). Sticky at top.
+
+Left collapsible side nav only for deeply nested pages (optional mobile behavior: top nav collapses to hamburger).
+
+Footer: copyright, version, last model run, data license.
+
+Primary pages (each must be a separate route/page; not a single long scrolled SPA)
+
+Overview / Home (Dashboard) — summary view for operations
+
+Big R/S/G status tiles (Past 24h + Current) with numeric values (e.g., G0, S0, R0), last update timestamp, and short explanation.
+
+Global situational panel: small 3D globe placeholder, event plume summary, top active alerts list (compact cards).
+
+Quick actions: ACK, Run Playbook (modal), Escalate (modal).
+
+Latest model prediction (3-hour): probability, predicted Dst/Kp, small sparkline.
+
+Ingest health panel: data source list with per-source latency and status light.
+
+Alerts (Active & History)
+
+Two tabs: Active / History. Active shows live cards (level, tier, confidence, evidence snippet, impacted assets, quick actions). History shows searchable list with filters (date range, level, source, asset). Each alert expands to canonical alert JSON + timeline + operator notes + attachments.
+
+Visualize (Globe & Charts)
+
+Fullpage CesiumJS globe with overlay layers: satellites, flight paths, grid nodes, magnetometer stations, event plume; time slider control.
+
+Charting area: synchronized charts (Bz, solar wind speed, density, Dst, Kp). Cursor sync, zoom/time window selection, export CSV and PNG/SVG.
+
+Provide toggle for “evidence bundle” (last N minutes window) and overlay predicted T+3h plume.
+
+Satellite Ops
+
+Satellite list + orbital track viewer; predicted drag & recommended delta-v windows; fuel cost estimate.
+
+One-click safe-mode checklist (requires auth & confirmation).
+
+Aviation
+
+Polar Route Map with risk overlays; suggested reroute generator; cumulative radiation calculator for flight segments.
+
+Human Spaceflight Console
+
+Simplified high-clarity alerts, shielding schematic, live dosimetry, shelter countdown widget.
+
+Data Sources & Health (Ingest)
+
+Table of sources (DSCOVR, ACE, GOES, NOAA, Kyoto, BGS, DONKI). For each: last ingest time, latency, sample rate, recent errors, failover options, health history graph. Allow manual “force re-ingest” for testing.
+
+Model & Training
+
+Model metrics (Brier, ROC, calibration), last retrain timestamp, drift indicators, feature importance (SHAP), retrain button (with guardrails). Show training dataset size and imbalance stats.
+
+Playbooks / Runbooks
+
+Library of playbooks per persona (Grid, Satellite, Aviation). Each playbook has steps, estimated time to complete, required approvals, and an automation endpoint to call.
+
+Settings / Admin
+
+Users & roles (RBAC), thresholds editor (with two-person approval for production threshold changes), subscription management (webhooks, SMS, email), API keys, system configuration, data retention policy.
+
+Key UI and UX behaviors
+
+Alerts flow: Tier1 (3h model) creates WATCH; Tier2 (threshold) creates CANDIDATE; Confirmator fuses → auto dispatch or human in loop based on confidence. Implement UI states that reflect this life cycle (candidate → pending → active → cleared).
+
+Operator actions: ack, escalate, run playbook, suppress duplicates, attach notes. Each action must be logged with user & timestamp.
+
+Evidence preview: show last N minutes (configurable) as small multi-chart sparkline in every alert card.
+
+Notification center: real-time push (websocket) and fallback poll; show unread count in nav.
+
+Accessibility: keyboard focus states, 2.0x font scaling support, color-blind safe charts, aria labels, tabular numbers for telemetry (font-variant-numeric: tabular-nums).
+
+Data & API contract (mock)
+
+Provide a mock server (static JSON / small Node/Express or json-server) with endpoints:
+
+GET /api/v1/health → per-source health
+
+GET /api/v1/alerts?active=true → list of active alerts
+
+GET /api/v1/alerts/{id} → alert detail (canonical payload)
+
+POST /api/v1/alerts/{id}/ack → ack
+
+POST /api/v1/playbooks/{id}/run → run playbook
+
+GET /api/v1/model/metrics → model performance metrics
+
+GET /api/v1/sources → list of data sources with latencies
+
+Example canonical alert JSON (include this exact schema in mock):
+
+{
+ "alert_id":"A20250912T0012Z_0001",
+ "level":"WARNING",
+ "tier":"imminent",
+ "timestamp":"2025-09-12T00:12:34Z",
+ "sources":["DSCOVR","KyotoWDC"],
+ "tier1": {"probability":0.87, "pred_dst_at_t3h":-78},
+ "tier2": {"b_z_min_last_10m":-12.4, "dst_current":-63},
+ "recommended_actions":["Initiate satellite safe mode","Isolate critical grid transformers"],
+ "confidence":0.92,
+ "expires_at":"2025-09-12T00:42:34Z",
+ "impacted_assets":[{"type":"grid","id":"GRID-NE-01"}],
+ "links": {"playbook":"/playbooks/grid_short_circuit","visualization":"/ui/globe?event=A20250912T0012Z_0001"}
+}
+
+
+UX details to enforce
+
+Split content across pages; do not cram everything on one page. Each page has a primary question it answers (Overview: “What’s happening?”, Alerts: “What needs action?”, Visualize: “Where & why?”, Data Sources: “Is our telemetry healthy?”, Model: “Is the model calibrated?”).
+
+Keep topbar & nav consistent and compact; use side panels or modals for details, not fullpage overlays unless user chooses “drilldown”.
+
+Use progressive disclosure: summary cards on lists, expand to details in slide-over panels.
+
+Provide export (CSV) and share (permalink) on key pages.
+
+Responsiveness
+
+Desktop: 3-column grid (nav + main + rightrail) for dashboard.
+
+Tablet: 2-column stacked.
+
+Mobile: collapse to single column; switch to compact summary cards and simpler charts.
+
+Security & roles
+
+Implement auth stubs (SSO friendly) and role levels: Viewer, Operator, Analyst, Admin.
+
+Only Admin can change thresholds and approve production threshold changes (2-person approval workflow UI stub).
+
+Audit log for all actions.
+
+Testing & acceptance criteria
+
+UI prototype is routable with at least the pages listed; navigation is correct.
+
+All key components (alert list, alert detail, globe placeholder, charts, ingest health) use the dark theme tokens.
+
+Mock API returns realistic sample data and all UI pages use it.
+
+Basic unit tests for front-end components (example: alert card renders, ack button calls endpoint). Integration test: simulate an incoming alert via websocket that shows up on Active Alerts page.
+
+Accessibility checks: color contrast pass for primary UI text (≥4.5), tab order correct, aria labels on interactive elements.
+
+Deliverables & timeline (MVP)
+
+1 week: clickable prototype with routing, theme, sample pages (Overview, Alerts, Visualize, Data Sources, Settings) and mock API.
+
+2–4 weeks: extend pages (Satellite Ops, Aviation, Human Spaceflight), playbooks integration, model metrics page, basic auth, tests, and deployment scripts.
+
+Final: documentation (README), design tokens (JSON/CSS variables), and sample data.
+
+Extra notes for the implementer/designer
+
+Use React + React Router (or similar) for pages. Prefer component library (Chakra/Material) only for primitives; override theme with exact tokens.
+
+Use Plotly/D3 for charts and CesiumJS for the globe (or a minimal globe placeholder for the MVP).
+
+Keep designs data-first; every interactive control must indicate source and timestamp.
+
+Use JetBrains Mono for telemetric numbers and ensure monospaced digits everywhere numeric alignment matters.
+
+Acceptance checklist (quick)
+
+ Separate pages exist for each major area and are accessible from nav.
+
+ Alerts page supports Active & History with full detail view.
+
+ Visualize page contains globe placeholder & synced charts.
+
+ Mock API adheres to schema and powers pages.
+
+ Theme tokens implemented and applied app-wide.
+
+ Operator actions log to mock audit endpoint.
