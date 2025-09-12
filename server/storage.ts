@@ -11,8 +11,16 @@ import {
   type InsertModelMetrics,
   type DataSource,
   type InsertDataSource,
-  getStormLevel
+  getStormLevel,
+  users,
+  omni2Data,
+  forecasts,
+  alerts,
+  modelMetrics,
+  dataSources
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 // Enhanced storage interface for space weather system
@@ -304,4 +312,230 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// PostgreSQL implementation using Drizzle ORM
+export class DatabaseStorage implements IStorage {
+  // User management methods
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  // OMNI2 data methods
+  async getLatestOmni2Data(limit = 24): Promise<Omni2Data[]> {
+    return await db.select()
+      .from(omni2Data)
+      .orderBy(desc(omni2Data.timestamp))
+      .limit(limit);
+  }
+
+  async insertOmni2Data(data: InsertOmni2Data): Promise<Omni2Data> {
+    const [result] = await db
+      .insert(omni2Data)
+      .values(data)
+      .returning();
+    return result;
+  }
+
+  async getOmni2DataRange(startTime: Date, endTime: Date): Promise<Omni2Data[]> {
+    return await db.select()
+      .from(omni2Data)
+      .where(and(
+        gte(omni2Data.timestamp, startTime),
+        lte(omni2Data.timestamp, endTime)
+      ))
+      .orderBy(omni2Data.timestamp);
+  }
+
+  // Forecast methods
+  async getLatestForecast(horizon: "30min" | "3hour"): Promise<Forecast | undefined> {
+    const [forecast] = await db.select()
+      .from(forecasts)
+      .where(eq(forecasts.horizon, horizon))
+      .orderBy(desc(forecasts.forecast_time))
+      .limit(1);
+    return forecast || undefined;
+  }
+
+  async insertForecast(forecast: InsertForecast): Promise<Forecast> {
+    const [result] = await db
+      .insert(forecasts)
+      .values(forecast)
+      .returning();
+    return result;
+  }
+
+  async getForecastHistory(horizon: "30min" | "3hour", limit = 50): Promise<Forecast[]> {
+    return await db.select()
+      .from(forecasts)
+      .where(eq(forecasts.horizon, horizon))
+      .orderBy(desc(forecasts.forecast_time))
+      .limit(limit);
+  }
+
+  // Alert methods
+  async getActiveAlerts(): Promise<Alert[]> {
+    const now = new Date();
+    // Get all active alerts and filter expired ones in JavaScript
+    // since Drizzle OR logic for nullable fields can be complex
+    const activeAlerts = await db.select()
+      .from(alerts)
+      .where(eq(alerts.status, 'active'))
+      .orderBy(desc(alerts.created_at));
+    
+    // Filter out expired alerts (keep alerts with no expiry or future expiry)
+    return activeAlerts.filter(alert => !alert.expires_at || alert.expires_at > now);
+  }
+
+  async getAlertHistory(limit = 100): Promise<Alert[]> {
+    return await db.select()
+      .from(alerts)
+      .orderBy(desc(alerts.created_at))
+      .limit(limit);
+  }
+
+  async insertAlert(alert: InsertAlert): Promise<Alert> {
+    const [result] = await db
+      .insert(alerts)
+      .values(alert)
+      .returning();
+    return result;
+  }
+
+  async acknowledgeAlert(id: string, acknowledgedBy: string): Promise<Alert | undefined> {
+    const [result] = await db
+      .update(alerts)
+      .set({
+        status: 'acknowledged',
+        acknowledged_by: acknowledgedBy,
+        acknowledged_at: new Date()
+      })
+      .where(eq(alerts.id, id))
+      .returning();
+    return result || undefined;
+  }
+
+  // Model metrics methods
+  async getLatestModelMetrics(): Promise<ModelMetrics | undefined> {
+    const [metrics] = await db.select()
+      .from(modelMetrics)
+      .orderBy(desc(modelMetrics.training_date))
+      .limit(1);
+    return metrics || undefined;
+  }
+
+  async insertModelMetrics(metrics: InsertModelMetrics): Promise<ModelMetrics> {
+    const [result] = await db
+      .insert(modelMetrics)
+      .values(metrics)
+      .returning();
+    return result;
+  }
+
+  async getModelMetricsHistory(limit = 20): Promise<ModelMetrics[]> {
+    return await db.select()
+      .from(modelMetrics)
+      .orderBy(desc(modelMetrics.training_date))
+      .limit(limit);
+  }
+
+  // Data source methods
+  async getAllDataSources(): Promise<DataSource[]> {
+    return await db.select()
+      .from(dataSources)
+      .orderBy(dataSources.name);
+  }
+
+  async updateDataSourceStatus(name: string, status: string, latencyMs?: number): Promise<DataSource | undefined> {
+    const updateData: any = {
+      status,
+      last_successful_ingest: new Date(),
+    };
+    if (latencyMs !== undefined) {
+      updateData.latency_ms = latencyMs;
+    }
+
+    const [result] = await db
+      .update(dataSources)
+      .set(updateData)
+      .where(eq(dataSources.name, name))
+      .returning();
+    return result || undefined;
+  }
+
+  async insertDataSource(source: InsertDataSource): Promise<DataSource> {
+    const [result] = await db
+      .insert(dataSources)
+      .values(source)
+      .returning();
+    return result;
+  }
+
+  // Initialize method for seeding data
+  async initializeWithMockData(): Promise<void> {
+    // Check if we already have data
+    const existingSources = await this.getAllDataSources();
+    if (existingSources.length > 0) {
+      return; // Already initialized
+    }
+
+    // Initialize data sources
+    const mockSources: InsertDataSource[] = [
+      { name: "ACE", type: "satellite", status: "online", update_frequency: 300, critical: true, url: "https://www.spaceweather.gov/", latency_ms: 150, reliability_score: 0.98 },
+      { name: "WIND", type: "satellite", status: "online", update_frequency: 300, critical: true, url: "https://wind.nasa.gov/", latency_ms: 200, reliability_score: 0.95 },
+      { name: "DSCOVR", type: "satellite", status: "degraded", update_frequency: 300, critical: false, url: "https://www.nesdis.noaa.gov/", latency_ms: 450, reliability_score: 0.87 },
+      { name: "GOES-16", type: "satellite", status: "online", update_frequency: 60, critical: true, url: "https://www.goes.noaa.gov/", latency_ms: 100, reliability_score: 0.99 },
+      { name: "SOHO", type: "satellite", status: "online", update_frequency: 600, critical: false, url: "https://soho.esac.esa.int/", latency_ms: 300, reliability_score: 0.92 }
+    ];
+
+    for (const source of mockSources) {
+      await this.insertDataSource(source);
+    }
+    
+    // Initialize with recent OMNI2 data
+    const now = new Date();
+    for (let i = 0; i < 100; i++) {
+      const timestamp = new Date(now.getTime() - i * 3600000); // hourly data for last 100 hours
+      await this.insertOmni2Data({
+        timestamp,
+        dst_index: -20 + Math.random() * 60 - 30, // -50 to +10
+        scalar_b: 3 + Math.random() * 12, // 3-15 nT
+        alpha_proton_ratio: 0.03 + Math.random() * 0.07, // 0.03-0.1
+        sunspot_number: Math.floor(Math.random() * 200),
+        sw_plasma_temperature: 10000 + Math.random() * 50000, // 10K-60K
+        sw_plasma_speed: 300 + Math.random() * 400, // 300-700 km/s
+        kp_index: Math.random() * 9,
+        ae_index: Math.random() * 2000,
+        source: "ACE",
+        quality: Math.random() > 0.1 ? "good" : "fair"
+      });
+    }
+  }
+}
+
+// Use PostgreSQL storage in production, MemStorage for development/testing
+const useDatabase = process.env.NODE_ENV === 'production' || process.env.DATABASE_URL;
+
+let storage: IStorage;
+
+if (useDatabase) {
+  storage = new DatabaseStorage();
+  // Initialize with mock data if needed
+  (storage as DatabaseStorage).initializeWithMockData().catch(console.error);
+} else {
+  storage = new MemStorage();
+}
+
+export { storage };
