@@ -76,3 +76,4 @@ docker-compose.override.yml
 # Build artifacts
 vite.config.ts.*
 *.tar.gz
+.vercel
