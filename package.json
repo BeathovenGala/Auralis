@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
@@ -15,7 +18,9 @@
     "docker:build": "docker build -t auralis .",
     "docker:run": "docker-compose up",
     "deploy:render": "npm run build && echo 'Ready for Render deployment'",
-    "deploy:vercel": "npm run build && echo 'Ready for Vercel deployment'"
+    "deploy:vercel": "npm run build && echo 'Ready for Vercel deployment'",
+    "deploy:railway": "npm run build && echo 'Ready for Railway deployment'",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
