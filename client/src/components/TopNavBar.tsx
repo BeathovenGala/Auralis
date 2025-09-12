@@ -93,7 +93,7 @@ export default function TopNavBar({ className }: TopNavBarProps) {
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
               <Satellite className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-bold text-lg">GEOSTORM</span>
+            <span className="font-bold text-lg">AURALIS</span>
           </Link>
         </div>
 

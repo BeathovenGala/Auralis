@@ -1,7 +1,7 @@
 // Random Forest Model for Geomagnetic Storm Prediction
 // Based on the academic paper's findings for Dst index prediction
 
-import { type Omni2Data, getStormLevel } from "@shared/schema";
+import { type Omni2Data, getStormLevel } from "../../shared/schema";
 
 // Feature importance weights from academic paper
 interface ModelFeatures {

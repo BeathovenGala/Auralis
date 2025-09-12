@@ -18,8 +18,8 @@ import {
   alerts,
   modelMetrics,
   dataSources
-} from "@shared/schema";
-import { db } from "./db";
+} from "../../shared/schema";
+import { db } from "../db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { randomUUID } from "crypto";
 

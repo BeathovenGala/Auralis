@@ -10,17 +10,17 @@ import TopNavBar from "@/components/TopNavBar";
 import Footer from "@/components/Footer";
 
 // Pages
-import Overview from "@/pages/Overview";
-import Alerts from "@/pages/Alerts";
-import Visualize from "@/pages/Visualize";
-import SatelliteOps from "@/pages/SatelliteOps";
-import Aviation from "@/pages/Aviation";
-import HumanSpaceflight from "@/pages/HumanSpaceflight";
-import DataSources from "@/pages/DataSources";
-import ModelTraining from "@/pages/ModelTraining";
-import Playbooks from "@/pages/Playbooks";
-import Settings from "@/pages/Settings";
-import NotFound from "@/pages/not-found";
+import Overview from "@/screens/Overview";
+import Alerts from "@/screens/Alerts";
+import Visualize from "@/screens/Visualize";
+import SatelliteOps from "@/screens/SatelliteOps";
+import Aviation from "@/screens/Aviation";
+import HumanSpaceflight from "@/screens/HumanSpaceflight";
+import DataSources from "@/screens/DataSources";
+import ModelTraining from "@/screens/ModelTraining";
+import Playbooks from "@/screens/Playbooks";
+import Settings from "@/screens/Settings";
+import NotFound from "@/screens/not-found";
 
 function Router() {
   return (
@@ -50,7 +50,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="geostorm-ui-theme">
+  <ThemeProvider defaultTheme="dark" storageKey="auralis-ui-theme">
         <TooltipProvider>
           <div className="min-h-screen bg-background text-foreground flex flex-col">
             <TopNavBar />

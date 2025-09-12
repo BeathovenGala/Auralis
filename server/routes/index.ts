@@ -1,13 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { geostormModel } from "./ml-model";
+import { storage } from "../services/storage";
+import { geostormModel } from "../services/ml-model";
 import { 
   insertOmni2DataSchema, 
   insertAlertSchema, 
   alertThresholds,
   getStormLevel 
-} from "@shared/schema";
+} from "../../shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
