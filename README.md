@@ -698,76 +698,96 @@ MIT License - see LICENSE file for details.
 
 ```mermaid
 flowchart TD
-    A[Data Ingestion: Solar Observatories (Aditya-L1, NASA, ESA)] --> B[Sunspot & CME Detection]
-    B --> C[Magnetic Field & Polarity Analysis]
-    C --> D[ML Prediction Engine (CNN + LSTM + Transformer)]
-    D --> E[Trajectory & Geo-effectiveness Modeling]
-    E --> F[Risk Heatmap Generation]
-    F --> G[Automated Alerts & Infrastructure Shutdowns]
-    G --> H[User Dashboard & API]
+    A[Data Ingestion]
+    B[Sunspot & CME Detection]
+    C[Magnetic Field & Polarity Analysis]
+    D[ML Prediction Engine]
+    E[Trajectory Modeling]
+    F[Geo-effectiveness Scoring]
+    G[Risk Heatmap Generation]
+    H[Automated Alerts]
+    I[Infrastructure Shutdowns]
+    J[User Dashboard]
+    K[API]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    H --> J
+    J --> K
+    I --> J
 ```
 
 ---
 
-### 2️⃣ **Use Case Diagram**
-
-```mermaid
-usecaseDiagram
-    actor SatelliteOperator as SO
-    actor AviationDispatcher as AD
-    actor PowerGridEngineer as PGE
-    actor Researcher as R
-    actor GovernmentAgency as GA
-    SO --> (Receive Satellite Risk Alerts)
-    AD --> (Get Aviation Radiation Forecasts)
-    PGE --> (Grid Protection Recommendations)
-    R --> (Access Space Weather Data)
-    GA --> (Disaster Response Planning)
-    (Receive Satellite Risk Alerts) --> (User Dashboard)
-    (Get Aviation Radiation Forecasts) --> (User Dashboard)
-    (Grid Protection Recommendations) --> (User Dashboard)
-    (Access Space Weather Data) --> (API)
-    (Disaster Response Planning) --> (Automated Alerts)
-```
-
----
-
-### 3️⃣ **Mock Diagram: Proposed Solution Architecture**
+### 2️⃣ **Solution Architecture**
 
 ```mermaid
 flowchart LR
     subgraph Observatories
-      A1[Aditya-L1]
-      A2[NASA]
-      A3[ESA]
+      O1[Aditya-L1]
+      O2[NASA]
+      O3[ESA]
     end
     subgraph Data Layer
-      B1[Real-time Data Ingestion]
-      B2[Historical Data Store]
+      DL1[Real-time Ingestion]
+      DL2[Historical Store]
     end
     subgraph ML Engine
-      C1[Sunspot & CME Analysis]
-      C2[Magnetic Field Modeling]
-      C3[Prediction Engine]
+      ML1[Sunspot/CME Analysis]
+      ML2[Magnetic Modeling]
+      ML3[Prediction Engine]
     end
     subgraph Application Layer
-      D1[Heatmap Visualizer]
-      D2[Alert System]
-      D3[API Gateway]
-      D4[User Dashboard]
+      AL1[Heatmap Visualizer]
+      AL2[Alert System]
+      AL3[API Gateway]
+      AL4[User Dashboard]
     end
-    A1 --> B1
-    A2 --> B1
-    A3 --> B1
-    B1 --> C1
-    B2 --> C1
-    C1 --> C2
-    C2 --> C3
-    C3 --> D1
-    C3 --> D2
-    D1 --> D4
-    D2 --> D4
-    D3 --> D4
+    O1 --> DL1
+    O2 --> DL1
+    O3 --> DL1
+    DL1 --> ML1
+    DL2 --> ML1
+    ML1 --> ML2
+    ML2 --> ML3
+    ML3 --> AL1
+    ML3 --> AL2
+    AL1 --> AL4
+    AL2 --> AL4
+    AL3 --> AL4
+```
+
+---
+
+### 3️⃣ **Use Case Diagram**
+
+```mermaid
+flowchart LR
+    SO[Satellite Operator]
+    AD[Aviation Dispatcher]
+    PGE[Power Grid Engineer]
+    R[Researcher]
+    GA[Government Agency]
+    U1[Receive Satellite Risk Alerts]
+    U2[Get Aviation Radiation Forecasts]
+    U3[Grid Protection Recommendations]
+    U4[Access Space Weather Data]
+    U5[Disaster Response Planning]
+    UD[User Dashboard]
+    API[API]
+    AA[Automated Alerts]
+
+    SO --> U1 --> UD
+    AD --> U2 --> UD
+    PGE --> U3 --> UD
+    R --> U4 --> API
+    GA --> U5 --> AA
 ```
 
 ---
@@ -793,10 +813,10 @@ journey
 ---
 
 ## 🖌️ **How to Read These Diagrams**
-- **Process Workflow**: Shows how data flows from observatories to actionable alerts.
-- **Use Case Diagram**: Visualizes key users and their interactions with Auralis.
-- **Solution Architecture**: Illustrates the modular, scalable design of the platform.
-- **User Journey**: Maps the experience from alert to action and post-event analysis.
+- **Process Workflow**: Shows how data flows and branches from observatories to multiple outcomes (alerts, shutdowns, dashboard, API).
+- **Solution Architecture**: Illustrates modular, scalable design with clear branching between layers.
+- **Use Case Diagram**: Maps user types to their specific interactions and outcomes.
+- **User Journey**: Follows a user from alert to action and post-event analysis.
 
 ---
 
