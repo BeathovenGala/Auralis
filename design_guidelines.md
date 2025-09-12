@@ -1,123 +1,125 @@
-# Geostorm Alerting System - Design Guidelines
+# Geostorm Alerting System - Enhanced Design Guidelines
 
 ## Design Approach
-**System-Based Approach**: Following Material Design principles for this data-intensive, mission-critical application. The system prioritizes clarity, consistency, and rapid information processing over visual flair, as operators need to quickly assess space weather conditions and take action.
+**System-Based Approach**: Material Design principles enhanced with Bureau of Meteorology's clean, professional aesthetic. Emphasizes modular card-based layouts, scientific data clarity, and operational efficiency for 24/7 control room environments.
 
 ## Core Design Elements
 
 ### A. Color Palette
-**Dark Mode Primary** (system operates 24/7 in control room environments):
-- Background: 220 15% 8% (dark slate)
-- Surface: 220 12% 12% (elevated panels)
-- Primary: 200 100% 60% (operational blue)
-- Text: 0 0% 95% (high contrast white)
+**Dark Mode Primary** (optimized for extended control room operation):
+- Background: 220 15% 8% (deep operational slate)
+- Surface: 220 12% 14% (elevated card surfaces)
+- Primary: 205 85% 65% (Bureau-inspired operational blue)
+- Secondary: 220 20% 25% (subtle panel dividers)
+- Text Primary: 0 0% 95% (maximum contrast)
+- Text Secondary: 0 0% 75% (supporting information)
 
-**Status Colors** (critical for R/S/G indicators):
-- Green (Normal): 120 60% 45%
-- Yellow (Elevated): 45 90% 55%
-- Orange (High): 25 90% 55%
-- Red (Severe): 0 85% 55%
+**Scientific Status Colors** (R/S/G space weather indicators):
+- Green (Quiet): 120 55% 50% (stable conditions)
+- Yellow (Active): 45 85% 60% (elevated activity)
+- Orange (Minor Storm): 25 90% 58% (storm conditions)
+- Red (Major Storm): 0 85% 58% (severe events)
 
 ### B. Typography
 **Google Fonts Implementation**:
-- Primary: Inter (interface text, data labels)
-- Monospace: JetBrains Mono (timestamps, coordinates, technical data)
+- Primary: Inter (clean, professional interface text)
+- Data/Scientific: JetBrains Mono (precise technical displays)
 
-**Hierarchy**:
-- Display: 32px Inter Bold (dashboard title)
-- Headers: 24px Inter SemiBold (panel titles)
-- Body: 16px Inter Regular (general content)
-- Data: 14px JetBrains Mono (timestamps, coordinates)
-- Captions: 12px Inter Medium (status indicators)
+**Professional Hierarchy**:
+- Dashboard Title: 28px Inter Bold
+- Section Headers: 20px Inter SemiBold  
+- Card Titles: 16px Inter SemiBold
+- Body Text: 14px Inter Regular
+- Data Values: 16px JetBrains Mono Medium
+- Timestamps: 12px JetBrains Mono Regular
+- Captions: 11px Inter Medium
 
 ### C. Layout System
-**Tailwind Spacing Primitives**: Consistent use of 2, 4, 6, 8, 12, 16 units
-- Micro spacing: p-2, m-2 (8px) for tight elements
-- Standard spacing: p-4, m-4 (16px) for general layout
-- Section spacing: p-8, m-8 (32px) for major divisions
+**Tailwind Spacing Primitives**: 2, 4, 6, 8, 12, 16 units for consistent rhythm
+- Card internal spacing: p-4, p-6 (professional breathing room)
+- Grid gaps: gap-4, gap-6 (modular separation)
+- Section margins: mb-8, mt-12 (clear hierarchical divisions)
 
-**Grid Structure**:
-- Top bar: Fixed header with system status
-- Three-column layout: Sources (25%) | Main Dashboard (50%) | Alerts/Actions (25%)
-- Bottom panel: Collapsible charts and diagnostics
+**Modular Grid Structure**:
+- Top status bar: System health and time indicators
+- Primary grid: 3-column responsive (sidebar 20% | main 55% | alerts 25%)
+- Card-based modules: Standardized heights with overflow handling
+- Bottom panel: Collapsible detailed charts and diagnostics
 
 ### D. Component Library
 
-**Status Indicators**:
-- R/S/G tiles: Large circular indicators with color-coded backgrounds, white text, tooltip explanations
-- System health: Small circular dots with green/yellow/red states
-- Data freshness: Timestamp with color-coded staleness indicators
+**Enhanced Card System**:
+- Base cards: Elevated surfaces (shadow-lg) with rounded-lg corners
+- Status cards: Left border indicators matching R/S/G colors
+- Data cards: Integrated mini-charts and trend indicators
+- Action cards: Clear CTAs with appropriate button hierarchy
 
-**Navigation**:
-- Top bar: Minimal, system status focused
-- Tab navigation: Underlined active states for different operational views
-- Quick actions: Prominent buttons for critical operations
+**Key Indices Display**:
+- Large numerical displays with scientific units
+- Color-coded backgrounds for status levels
+- Interactive tooltips with scientific explanations
+- Historical comparison indicators (arrows, percentages)
 
-**Data Displays**:
-- Cards: Subtle borders, dark surfaces with rounded corners (8px)
-- Tables: Zebra striping for data rows, fixed headers
-- Charts: High contrast lines against dark backgrounds, synchronized crosshairs
+**Scientific Tooltips**:
+- Dark surfaces with bright borders
+- Technical definitions with units and ranges
+- Context-aware positioning
+- Instant display with fade transitions
 
-**Forms & Controls**:
-- Input fields: Dark backgrounds with bright borders on focus
-- Toggles: Clear on/off states with appropriate colors
-- Sliders: For time navigation and threshold adjustments
+**Enhanced Data Visualization**:
+- Dst prediction charts: High-contrast time series with confidence intervals
+- Multi-panel layouts: Synchronized time axes across related data
+- Status timeline: Horizontal strips showing R/S/G progression
+- Geographic displays: Professional cartographic styling
 
-**Overlays**:
-- Modals: Semi-transparent dark backdrops with elevated content
-- Tooltips: Instant display with technical explanations
-- Alert banners: Full-width status strips at top of interface
+**Professional Controls**:
+- Time range selectors: Clean tab-based interfaces
+- Data source toggles: Clear on/off states with source health
+- Export functions: Subtle but accessible action buttons
+- Filter panels: Collapsible sidebars with professional form styling
 
-### E. Interactive Elements
+### E. Bureau of Meteorology Enhancements
 
-**3D Globe (CesiumJS)**:
-- Dark space background
-- Earth with realistic textures
-- Color-coded event plumes matching R/S/G status colors
-- Satellite orbit traces in muted colors
-- Interactive time slider with clear timestamps
+**Clean Professional Aesthetics**:
+- Subtle drop shadows for depth without distraction
+- Consistent use of whitespace for information hierarchy
+- Professional button styling with clear interactive states
+- Minimal use of decorative elements
 
-**Live Solar Imagery**:
-- Large panel with SDO/AIA data display
-- Time-stepping controls with play/pause functionality
-- Multi-wavelength selection tabs
-- Zoom and pan capabilities with reset button
+**Operational Interface Elements**:
+- System status indicators in header with real-time updates
+- Quick action toolbar for common operations
+- Breadcrumb navigation for complex workflows
+- Professional alert banners with appropriate severity styling
 
-**Time Series Charts**:
-- Dark backgrounds with bright data lines
-- Synchronized crosshairs across all charts
-- Color-coded data series matching status indicators
-- Zoom and pan with time range selection
+**Enhanced Information Architecture**:
+- Critical data prominently featured in primary viewport
+- Supporting information accessible via progressive disclosure
+- Clear visual pathways from alerts to required actions
+- Contextual help system with scientific explanations
 
 ## Specialized Features
 
-**Alert Cards**:
-- Elevated surfaces with appropriate status color left borders
-- Clear hierarchy: Level > Source > Time > Actions
-- Quick action buttons with appropriate button variants
+**Real-time Dst Predictions**:
+- Large prediction charts with uncertainty bands
+- Color-coded forecast periods
+- Historical context overlays
+- Confidence indicators with scientific methodology tooltips
 
-**Playbook Interface**:
-- Checklist-style layout with clear completion states
-- Persona-specific color coding (subtle)
-- Progress indicators for multi-step processes
-
-**Data Source Health Panel**:
-- Traffic light indicators for each source
-- "Last updated" timestamps prominently displayed
-- Failover status with clear visual indicators
+**Enhanced Alert Management**:
+- Tiered alert cards with Bureau-style severity indicators
+- Automatic alert prioritization with visual hierarchy
+- One-click acknowledgment and action workflows
+- Historical alert context panels
 
 ## Critical Design Principles
 
-1. **Information Density**: Pack maximum useful information without overwhelming
-2. **Status Clarity**: Instant recognition of system states through color and typography
-3. **Time Awareness**: Prominent timestamps and data freshness indicators throughout
-4. **Action Orientation**: Clear paths from information to required actions
-5. **Professional Reliability**: Conservative, proven design patterns for mission-critical use
+1. **Scientific Accuracy**: Precise data representation with appropriate uncertainty indicators
+2. **Operational Efficiency**: Minimal clicks from data to action
+3. **Professional Clarity**: Bureau-inspired clean layouts with excellent information hierarchy
+4. **Modular Flexibility**: Card-based system allowing customizable dashboards
+5. **24/7 Reliability**: Optimized for extended operation in professional environments
+6. **Progressive Disclosure**: Complex data accessible without overwhelming primary interface
 
-## Performance Considerations
-- Minimize animations (only for status transitions)
-- Optimize for 24/7 operation in control room lighting
-- Ensure readability across multiple monitor setups
-- Support for rapid context switching between different operational views
-
-This design system prioritizes operational efficiency and situational awareness while maintaining modern web standards suitable for a professional space weather operations center.
+## Images
+No large hero images required. Interface relies on data visualization, charts, and scientific displays. Small institutional logos may appear in header for operational context.
