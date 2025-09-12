@@ -692,4 +692,114 @@ MIT License - see LICENSE file for details.
 
 ---
 
+## 🖼️ Visual Diagrams & Workflows
+
+### 1️⃣ **Auralis Process Workflow**
+
+```mermaid
+flowchart TD
+    A[Data Ingestion: Solar Observatories (Aditya-L1, NASA, ESA)] --> B[Sunspot & CME Detection]
+    B --> C[Magnetic Field & Polarity Analysis]
+    C --> D[ML Prediction Engine (CNN + LSTM + Transformer)]
+    D --> E[Trajectory & Geo-effectiveness Modeling]
+    E --> F[Risk Heatmap Generation]
+    F --> G[Automated Alerts & Infrastructure Shutdowns]
+    G --> H[User Dashboard & API]
+```
+
+---
+
+### 2️⃣ **Use Case Diagram**
+
+```mermaid
+usecaseDiagram
+    actor SatelliteOperator as SO
+    actor AviationDispatcher as AD
+    actor PowerGridEngineer as PGE
+    actor Researcher as R
+    actor GovernmentAgency as GA
+    SO --> (Receive Satellite Risk Alerts)
+    AD --> (Get Aviation Radiation Forecasts)
+    PGE --> (Grid Protection Recommendations)
+    R --> (Access Space Weather Data)
+    GA --> (Disaster Response Planning)
+    (Receive Satellite Risk Alerts) --> (User Dashboard)
+    (Get Aviation Radiation Forecasts) --> (User Dashboard)
+    (Grid Protection Recommendations) --> (User Dashboard)
+    (Access Space Weather Data) --> (API)
+    (Disaster Response Planning) --> (Automated Alerts)
+```
+
+---
+
+### 3️⃣ **Mock Diagram: Proposed Solution Architecture**
+
+```mermaid
+flowchart LR
+    subgraph Observatories
+      A1[Aditya-L1]
+      A2[NASA]
+      A3[ESA]
+    end
+    subgraph Data Layer
+      B1[Real-time Data Ingestion]
+      B2[Historical Data Store]
+    end
+    subgraph ML Engine
+      C1[Sunspot & CME Analysis]
+      C2[Magnetic Field Modeling]
+      C3[Prediction Engine]
+    end
+    subgraph Application Layer
+      D1[Heatmap Visualizer]
+      D2[Alert System]
+      D3[API Gateway]
+      D4[User Dashboard]
+    end
+    A1 --> B1
+    A2 --> B1
+    A3 --> B1
+    B1 --> C1
+    B2 --> C1
+    C1 --> C2
+    C2 --> C3
+    C3 --> D1
+    C3 --> D2
+    D1 --> D4
+    D2 --> D4
+    D3 --> D4
+```
+
+---
+
+### 4️⃣ **User Journey: End-to-End Experience**
+
+```mermaid
+journey
+    title Auralis User Journey
+    section Awareness
+      Discover space weather risk: 5: User
+      Receive alert notification: 5: System
+    section Action
+      Review dashboard recommendations: 4: User
+      Initiate infrastructure protection: 4: User
+      Automated system shutdown: 5: System
+    section Post-Event
+      Analyze event impact: 3: User
+      Update protocols: 3: User
+      Share data with research community: 4: User
+```
+
+---
+
+## 🖌️ **How to Read These Diagrams**
+- **Process Workflow**: Shows how data flows from observatories to actionable alerts.
+- **Use Case Diagram**: Visualizes key users and their interactions with Auralis.
+- **Solution Architecture**: Illustrates the modular, scalable design of the platform.
+- **User Journey**: Maps the experience from alert to action and post-event analysis.
+
+---
+
+*For more interactive diagrams and live dashboards, visit [auralis.vercel.app](https://geostorm-guardian-o8t5dxb67-beathovengalas-projects.vercel.app)*
+
 **Auralis** - Built for the future of space weather operations. 🚀🌌
