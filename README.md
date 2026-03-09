@@ -10,7 +10,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 
-**🚀 Live Demo:** [auralis.vercel.app](https://geostorm-guardian-o8t5dxb67-beathovengalas-projects.vercel.app)
+**🚀 Live Demo:** [auralis.vercel.app](https://auralis-juliett.vercel.app/)
 
 *Protecting critical infrastructure and human spaceflight through intelligent space weather prediction*
 
