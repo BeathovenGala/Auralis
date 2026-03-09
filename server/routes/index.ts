@@ -2,11 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "../services/storage";
 import { geostormModel } from "../services/ml-model";
-import { 
-  insertOmni2DataSchema, 
-  insertAlertSchema, 
+import {
+  insertOmni2DataSchema,
+  insertAlertSchema,
   alertThresholds,
-  getStormLevel 
+  getStormLevel
 } from "../../shared/schema";
 import { z } from "zod";
 
@@ -29,11 +29,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/omni2/ingest", async (req, res) => {
     try {
+      if (req.body.timestamp) {
+        req.body.timestamp = new Date(req.body.timestamp);
+      }
       const validData = insertOmni2DataSchema.parse(req.body);
       const result = await storage.insertOmni2Data(validData);
       res.status(201).json(result);
     } catch (error) {
-      res.status(400).json({ error: "Invalid OMNI2 data format" });
+      console.error("OMNI2 Validation Error:", error);
+      res.status(400).json({ error: "Invalid OMNI2 data format", details: error });
     }
   });
 
@@ -41,20 +45,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/forecast/geomagnetic/:horizon", async (req, res) => {
     try {
       const horizon = req.params.horizon as "30min" | "3hour";
-      
+
       if (horizon !== "30min" && horizon !== "3hour") {
         return res.status(400).json({ error: "Invalid horizon. Use '30min' or '3hour'" });
       }
 
       // Get recent OMNI2 data for prediction
       const recentData = await storage.getLatestOmni2Data(12);
-      
+
       if (recentData.length === 0) {
         return res.status(503).json({ error: "Insufficient data for prediction" });
       }
 
       // Generate prediction using ML model
-      const prediction = horizon === "30min" 
+      const prediction = horizon === "30min"
         ? geostormModel.predict30Min(recentData)
         : geostormModel.predict3Hour(recentData);
 
@@ -91,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const horizon = req.params.horizon as "30min" | "3hour";
       const limit = parseInt(req.query.limit as string) || 50;
-      
+
       const history = await storage.getForecastHistory(horizon, limit);
       res.json(history);
     } catch (error) {
@@ -103,10 +107,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/model/metrics/geomagnetic", async (req, res) => {
     try {
       const metrics = geostormModel.getModelMetrics();
-      
+
       // Store metrics in database
       await storage.insertModelMetrics(metrics);
-      
+
       res.json(metrics);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch model metrics" });
@@ -116,28 +120,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/model/train/geomagnetic", async (req, res) => {
     try {
       const { training_period_hours = 720 } = req.body; // Default 30 days
-      
+
       // Get training data
       const endTime = new Date();
       const startTime = new Date(endTime.getTime() - training_period_hours * 3600000);
       const trainingData = await storage.getOmni2DataRange(startTime, endTime);
-      
+
       if (trainingData.length < 100) {
         return res.status(400).json({ error: "Insufficient training data" });
       }
 
       // Trigger model retraining
       const success = await geostormModel.retrain(trainingData);
-      
+
       if (success) {
         // Store new metrics after retraining
         const newMetrics = geostormModel.getModelMetrics();
         await storage.insertModelMetrics(newMetrics);
-        
-        res.json({ 
+
+        res.json({
           message: "Model retraining completed successfully",
           metrics: newMetrics,
-          training_samples: trainingData.length 
+          training_samples: trainingData.length
         });
       } else {
         res.status(500).json({ error: "Model retraining failed" });
@@ -171,13 +175,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { acknowledged_by } = req.body;
-      
+
       if (!acknowledged_by) {
         return res.status(400).json({ error: "acknowledged_by is required" });
       }
 
       const alert = await storage.acknowledgeAlert(id, acknowledged_by);
-      
+
       if (!alert) {
         return res.status(404).json({ error: "Alert not found" });
       }
@@ -202,9 +206,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { name } = req.params;
       const { status, latency_ms } = req.body;
-      
+
       const source = await storage.updateDataSourceStatus(name, status, latency_ms);
-      
+
       if (!source) {
         return res.status(404).json({ error: "Data source not found" });
       }
@@ -271,10 +275,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 // Helper function to check if alert should be generated
 async function checkAndGenerateAlert(prediction: any, horizon: "30min" | "3hour"): Promise<void> {
   const dst = prediction.predicted_dst;
-  
+
   // Determine alert level based on Dst thresholds from specification
   let alertLevel: keyof typeof alertThresholds | null = null;
-  
+
   if (dst <= alertThresholds.extreme.max) alertLevel = "extreme";
   else if (dst <= alertThresholds.severe.max) alertLevel = "severe";
   else if (dst <= alertThresholds.strong.max) alertLevel = "strong";
@@ -284,8 +288,8 @@ async function checkAndGenerateAlert(prediction: any, horizon: "30min" | "3hour"
   if (alertLevel) {
     // Check if similar alert already exists to avoid spam
     const activeAlerts = await storage.getActiveAlerts();
-    const existingAlert = activeAlerts.find(alert => 
-      alert.alert_level === alertLevel && 
+    const existingAlert = activeAlerts.find(alert =>
+      alert.alert_level === alertLevel &&
       alert.forecast_horizon === horizon &&
       Math.abs(alert.predicted_dst - dst) < 10 // Within 10 nT
     );
@@ -293,7 +297,7 @@ async function checkAndGenerateAlert(prediction: any, horizon: "30min" | "3hour"
     if (!existingAlert) {
       const alertTitle = `${alertLevel.toUpperCase()} Geomagnetic Storm Alert (${horizon} forecast)`;
       const alertDescription = `Predicted Dst index: ${dst.toFixed(1)} nT. ${getAlertDescription(alertLevel, dst)}`;
-      
+
       await storage.insertAlert({
         alert_level: alertLevel,
         predicted_dst: dst,
@@ -329,7 +333,7 @@ function getAlertDescription(level: string, dst: number): string {
 
 function getAffectedSystems(level: string): string[] {
   const baseSystems = ["GNSS/GPS", "HF Radio Communications"];
-  
+
   switch (level) {
     case "extreme":
     case "severe":
