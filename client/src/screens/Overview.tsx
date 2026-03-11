@@ -4,12 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { 
-  Activity, 
-  AlertTriangle, 
-  TrendingUp, 
-  TrendingDown, 
-  Clock, 
+import {
+  Activity,
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Clock,
   Zap,
   Satellite,
   BarChart3,
@@ -19,6 +19,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import type { Alert } from "../../../shared/schema";
 
 // Enhanced Scientific Tooltip Component
 function ScientificTooltip({ title, description, unit, range, children }: {
@@ -175,7 +176,7 @@ function ForecastingModule() {
     queryKey: ['/api/forecast/geomagnetic/30min'],
     refetchInterval: 60000, // Refresh every minute
   });
-  
+
   const { data: forecast3hour, isLoading: loading3hour } = useQuery({
     queryKey: ['/api/forecast/geomagnetic/3hour'],
     refetchInterval: 300000, // Refresh every 5 minutes
@@ -200,7 +201,7 @@ function ForecastingModule() {
       forecast_time: new Date(forecast3hour.forecast_time)
     } : {
       predicted_dst: -75,
-      storm_level: "G2", 
+      storm_level: "G2",
       confidence: 0.74,
       forecast_time: new Date()
     }
@@ -242,7 +243,7 @@ function ForecastingModule() {
               {forecasts["30min"].storm_level} - {forecast30.name}
             </Badge>
           </div>
-          
+
           <div className="grid grid-cols-3 gap-4">
             <div>
               <div className="text-sm text-muted-foreground">Predicted Dst</div>
@@ -277,7 +278,7 @@ function ForecastingModule() {
               {forecasts["3hour"].storm_level}
             </Badge>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">Dst: </span>
@@ -305,7 +306,15 @@ function ForecastingModule() {
 
 // Current Conditions Summary
 function CurrentConditionsCard() {
-  const [conditions] = useState({
+  type ConditionStatus = { level: string; value: string };
+  const [conditions] = useState<{
+    sol: ConditionStatus;
+    mag: ConditionStatus;
+    ion: ConditionStatus;
+    scalarB: number;
+    swSpeed: number;
+    timestamp: Date;
+  }>({
     sol: { level: 'normal', value: 'G0' },
     mag: { level: 'elevated', value: 'S1' },
     ion: { level: 'normal', value: 'R0' },
@@ -325,14 +334,13 @@ function CurrentConditionsCard() {
       <CardContent className="space-y-4">
         {/* Global Status Indicators */}
         <div className="grid grid-cols-3 gap-4">
-          {Object.entries(conditions).slice(0, 3).map(([key, status]) => (
+          {(Object.entries(conditions).slice(0, 3) as [string, ConditionStatus][]).map(([key, status]) => (
             <div key={key} className="text-center p-3 bg-muted/20 rounded border">
               <div className="text-xs font-medium text-muted-foreground mb-1">{key.toUpperCase()}</div>
               <div className="text-lg font-mono font-bold mb-1">{status.value}</div>
-              <div className={`w-2 h-2 rounded-full mx-auto ${
-                status.level === 'normal' ? 'bg-weather-normal' :
+              <div className={`w-2 h-2 rounded-full mx-auto ${status.level === 'normal' ? 'bg-weather-normal' :
                 status.level === 'elevated' ? 'bg-weather-elevated' : 'bg-weather-severe'
-              }`} />
+                }`} />
             </div>
           ))}
         </div>
@@ -383,9 +391,9 @@ function SystemStatusModule() {
             {systemHealth.dataSourcesOnline}/{systemHealth.dataSources} Online
           </Badge>
         </div>
-        
+
         <Progress value={healthPercentage} className="h-2" />
-        
+
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-muted-foreground">System Health: </span>
@@ -407,7 +415,7 @@ function SystemStatusModule() {
 
 // Active Alerts Summary
 function ActiveAlertsCard() {
-  const { data: alerts = [], isLoading } = useQuery({
+  const { data: alerts = [], isLoading } = useQuery<Alert[]>({
     queryKey: ['/api/alerts/active'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
