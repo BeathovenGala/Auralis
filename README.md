@@ -143,13 +143,14 @@ Auralis provides a comprehensive, real-time space weather monitoring ecosystem t
 
 ## Live Data Integration
 
-Auralis is connected to real-time data provided by the NOAA Space Weather Prediction Center (SWPC). A background worker process (`worker.js`) runs continuously on the server and performs the following every 30 minutes:
+Auralis is connected to real-time data provided by the NOAA Space Weather Prediction Center (SWPC). A background worker process (`worker.js`) runs continuously on the server and performs the following on a fixed interval:
 
-1. Fetches solar wind plasma data (speed, temperature, density) from the NOAA 1-day plasma feed
-2. Fetches interplanetary magnetic field data (Bt magnitude) from the NOAA 1-day magnetometer feed
-3. Fetches the planetary Kp index from the NOAA planetary K index feed
-4. Maps each feed into the Auralis OMNI2 schema and POSTs the record to the `/api/omni2/ingest` endpoint
-5. The ML model then uses this live data to generate 30-minute and 3-hour geomagnetic storm forecasts
+1. Fetches multiple live NOAA feeds in parallel: solar wind plasma, magnetometer, and planetary Kp
+2. Normalizes those feeds into one merged stream entry keyed by the latest source timestamps
+3. POSTs the OMNI2-compatible portion of the record to the `/api/omni2/ingest` endpoint for Postgres storage
+4. Appends the full normalized event to a daily archive file in `data/daily/YYYY-MM-DD.jsonl`
+5. Automatically rolls over to a new archive file when the day changes
+6. Skips duplicate writes when NOAA has not published a newer sample yet
 
 **Data sources used:**
 - `https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json`
@@ -158,7 +159,40 @@ Auralis is connected to real-time data provided by the NOAA Space Weather Predic
 
 To run the worker manually:
 ```bash
-node worker.js
+npm run worker:start
+```
+
+Each archive line contains one JSON object with the merged source payload, the OMNI2 payload saved to Postgres, and the ingest timestamps for that sample.
+
+### PM2 Server Setup
+
+To keep the API and the worker running on your server:
+
+```bash
+npm install
+npm run build
+npm install -g pm2
+pm2 start ecosystem.config.cjs
+pm2 save
+pm2 startup
+```
+
+Useful PM2 commands:
+
+```bash
+pm2 status
+pm2 logs auralis-worker
+pm2 restart auralis-worker
+pm2 restart auralis-api
+```
+
+Worker environment variables:
+
+```bash
+WORKER_POLL_INTERVAL_MS=300000
+WORKER_HTTP_TIMEOUT_MS=15000
+WORKER_ARCHIVE_DIR=./data/daily
+WORKER_APP_BASE_URL=http://127.0.0.1:5000
 ```
 
 ---
@@ -401,7 +435,7 @@ CREATE TABLE alerts (
 
 5. **Start the live data worker** (in a separate terminal):
    ```bash
-   node worker.js
+   npm run worker:start
    ```
 
 ### Production Deployment
@@ -472,7 +506,10 @@ npm start
 | `npm run db:generate` | Generate migration files |
 | `npm run db:migrate` | Run database migrations |
 | `npm run db:studio` | Open Drizzle Studio |
-| `node worker.js` | Start the NOAA data ingestion worker |
+| `npm run worker:start` | Start the NOAA data ingestion worker |
+| `npm run pm2:start` | Start the API and worker with PM2 |
+| `npm run pm2:restart` | Restart PM2 apps using the ecosystem file |
+| `npm run pm2:logs` | Stream PM2 logs |
 
 ---
 
